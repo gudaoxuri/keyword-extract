@@ -52,5 +52,6 @@ search.suning.com|path|0|decodeURI|UTF-8
 <host>|<js代码，入参为uri，返回值为result>
 
 e.g. :
+
 s.weibo.com|var uri = decodeURI(decodeURI(uri)); var kv = uri.split("/")[2]; result = kv.split("&Refer=")[0];
 ----

@@ -7,6 +7,7 @@
     <groupId>com.ecfront</groupId>
     <artifactId>keyword-extract</artifactId>
     <version>1.0</version>
+    <url>https://github.com/gudaoxuri/keyword-extract</url>
     <name>关键词提取</name>
     <description>URL关键词提取</description>
 
