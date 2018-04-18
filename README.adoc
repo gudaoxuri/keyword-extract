@@ -11,22 +11,22 @@ image:https://maven-badges.herokuapp.com/maven-central/com.ecfront/keyword-extra
 === 使用
 
 [source,xml]
-====
+----
 <dependency>
   <groupId>com.ecfront</groupId>
   <artifactId>keyword-extract</artifactId>
   <version>1.0</version>
 </dependency>
-====
+----
 
 [source,java]
-====
+----
 // 关键词提取
 String keyword = KeyWordExtract.extract(url);
 
 // 使用在线规则
 KeyWordExtract.loadOnlineRules("https://raw.githubusercontent.com/gudaoxuri/keyword-extract/master/src/main/resources/kwe-rules.txt");
-====
+----
 
 
 === 规则配置说明
@@ -35,7 +35,7 @@ KeyWordExtract.loadOnlineRules("https://raw.githubusercontent.com/gudaoxuri/keyw
 
 使用在线规则会覆盖自定义规则。
 
-====
+----
 # 一行一条规则，配置项以|分隔
 # 规则分一般规则和自定义规则，后者使用js代码处理
 
@@ -53,4 +53,4 @@ search.suning.com|path|0|decodeURI|UTF-8
 
 e.g. :
 s.weibo.com|var uri = decodeURI(decodeURI(uri)); var kv = uri.split("/")[2]; result = kv.split("&Refer=")[0];
-====
+----
