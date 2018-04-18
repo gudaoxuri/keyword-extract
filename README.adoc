@@ -1,0 +1,50 @@
+== URL关键词提取
+
+简单高效的URL关键词提取工具。
+
+=== 使用
+
+[source,xml]
+====
+<dependency>
+  <groupId>com.ecfront</groupId>
+  <artifactId>keyword-extract</artifactId>
+  <version>1.0</version>
+</dependency>
+====
+
+[source,java]
+====
+// 关键词提取
+String keyword = KeyWordExtract.extract(url);
+
+// 使用在线规则
+KeyWordExtract.loadOnlineRules("");
+====
+
+
+=== 规则配置说明
+
+本地规则文件默认已打到jar中，如要修改可在classpath根目录中创建``kwe-rules.txt``文件，此文件会覆盖默认规则。
+
+使用在线规则会覆盖自定义规则。
+
+====
+# 一行一条规则，配置项以|分隔
+# 规则分一般规则和自定义规则，后者使用js代码处理
+
+# 一般规则
+<host>|<关键字所在位置，query:查询条件中，path:url路径中>|<对于query位置指定关键字的key，对于path位置指定以/分隔的偏移量>|<解码方式，目前只支持decodeURI>|<编码>
+
+e.g. :
+
+www.baidu.com|query|wd|decodeURI|UTF-8
+weixin.sogou.com|query|query|encodeURI|UTF-8
+search.suning.com|path|0|decodeURI|UTF-8
+
+# 自定义规则
+<host>|<js代码，入参为uri，返回值为result>
+
+e.g. :
+s.weibo.com|var uri = decodeURI(decodeURI(uri)); var kv = uri.split("/")[2]; result = kv.split("&Refer=")[0];
+====
