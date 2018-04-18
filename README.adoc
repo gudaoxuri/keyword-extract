@@ -1,5 +1,11 @@
 == URL关键词提取
 
+image::https://img.shields.io/travis/gudaoxuri/keyword-extract.svg[link="https://travis-ci.org/gudaoxuri/keyword-extract"]
+image:https://api.codacy.com/project/badge/Grade/f2fc8d2aa9594a0bae6e2a445caa56db["Codacy code quality", link="https://www.codacy.com/app/gudaoxuri/keyword-extract?utm_source=github.com&utm_medium=referral&utm_content=gudaoxuri/keyword-extract&utm_campaign=Badge_Grade"]
+image:https://img.shields.io/badge/license-ASF2-blue.svg["Apache License 2",link="https://www.apache.org/licenses/LICENSE-2.0.txt"]
+image:https://maven-badges.herokuapp.com/maven-central/com.ecfront/keyword-extract/badge.svg["Maven Central",link="https://maven-badges.herokuapp.com/maven-central/com.ecfront/keyword-extract/"]
+
+
 简单高效的URL关键词提取工具。
 
 === 使用
@@ -19,7 +25,7 @@
 String keyword = KeyWordExtract.extract(url);
 
 // 使用在线规则
-KeyWordExtract.loadOnlineRules("");
+KeyWordExtract.loadOnlineRules("https://raw.githubusercontent.com/gudaoxuri/keyword-extract/master/src/main/resources/kwe-rules.txt");
 ====
 
 

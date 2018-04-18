@@ -43,6 +43,7 @@ public class KeyWordExtractTest {
 
     @Test
     public void testOnlineRule() throws IOException {
-        KeyWordExtract.loadOnlineRules("");
+        KeyWordExtract.loadOnlineRules("https://raw.githubusercontent.com/gudaoxuri/keyword-extract/master/src/main/resources/kwe-rules.txt");
+        testAll();
     }
 }
