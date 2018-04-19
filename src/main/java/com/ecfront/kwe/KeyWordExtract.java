@@ -101,6 +101,9 @@ public class KeyWordExtract {
         private Optional<String> parse(String path, String query) {
             if (jsFun == null) {
                 if (wdInQuery) {
+                    if(query==null||query.equals("")){
+                        return Optional.empty();
+                    }
                     String[] queryItems = query.split("&");
                     for (String queryItem : queryItems) {
                         if (queryItem.startsWith(queryKey + '=')) {
