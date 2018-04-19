@@ -10,6 +10,7 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class KeyWordExtract {
@@ -23,7 +24,7 @@ public class KeyWordExtract {
         try {
             loadRules(Helper.readAllByClassPath(LOCAL_RULE_FILE));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("[KWE]Load local rules error", e);
         }
     }
 
@@ -39,15 +40,16 @@ public class KeyWordExtract {
             }
             return "";
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("[KWE]Extract url error", e);
         }
     }
 
-    public static void loadOnlineRules(String ruleUrl) throws IOException {
-        loadRules(Helper.httpGet(ruleUrl));
+    public static long loadOnlineRules(String ruleUrl) throws IOException {
+        return loadRules(Helper.httpGet(ruleUrl));
     }
 
-    private static void loadRules(List<String> rules) {
+    private static long loadRules(List<String> rules) {
+        AtomicLong counter = new AtomicLong();
         rules.forEach(rule -> {
             String[] items = rule.split("\\|");
             if (items.length == 5 || items.length == 2) {
@@ -56,8 +58,10 @@ public class KeyWordExtract {
                     RULES.put(host, new HashSet<>());
                 }
                 RULES.get(host).add(new Parser(items));
+                counter.getAndIncrement();
             }
         });
+        return counter.get();
     }
 
     private static class Parser {
@@ -81,7 +85,7 @@ public class KeyWordExtract {
                 enc = items[4];
             } else {
                 try {
-                    jsFun = items[0].replaceAll(".", "_") + "_" + Math.abs(items[1].hashCode());
+                    jsFun = items[0].replaceAll("\\.", "_") + "_" + Math.abs(items[1].hashCode());
                     String js = "function " + jsFun + "(uri){\r\n" +
                             "var result = '';\r\n" +
                             items[1] + ";\r\n" +
@@ -89,12 +93,12 @@ public class KeyWordExtract {
                             "}\r\n";
                     jsEngine.eval(js);
                 } catch (ScriptException e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException("[KWE]Init JS Function [" + jsFun + "] error", e);
                 }
             }
         }
 
-        private Optional<String> parse(String path, String query) throws UnsupportedEncodingException {
+        private Optional<String> parse(String path, String query) {
             if (jsFun == null) {
                 if (wdInQuery) {
                     String[] queryItems = query.split("&");
@@ -114,17 +118,21 @@ public class KeyWordExtract {
                 try {
                     return Optional.of((String) ((Invocable) jsEngine).invokeFunction(jsFun, path + query));
                 } catch (ScriptException | NoSuchMethodException e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException("[KWE]Execute JS Function [" + jsFun + "] error", e);
                 }
             }
         }
 
-        private String parse(String encodeValue) throws UnsupportedEncodingException {
-            switch (codec.toLowerCase()) {
-                case "decodeuri":
-                    return URLDecoder.decode(encodeValue, enc);
-                default:
-                    throw new RuntimeException("Decoder[" + codec + "] NOT Exist.");
+        private String parse(String encodeValue) {
+            try {
+                switch (codec.toLowerCase()) {
+                    case "decodeuri":
+                        return URLDecoder.decode(encodeValue, enc);
+                    default:
+                        throw new RuntimeException("Decoder[" + codec + "] NOT Exist.");
+                }
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("[KWE]Parse decode [" + codec + "] error", e);
             }
         }
 

@@ -1,5 +1,6 @@
-package com.ecfront.kwe;
+package com.ecfront.kwe.test;
 
+import com.ecfront.kwe.KeyWordExtract;
 import org.junit.Assert;
 import org.junit.Test;
 
