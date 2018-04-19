@@ -6,7 +6,7 @@
 
     <groupId>com.ecfront</groupId>
     <artifactId>keyword-extract</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <url>https://github.com/gudaoxuri/keyword-extract</url>
     <name>关键词提取</name>
     <description>URL关键词提取</description>
@@ -68,27 +68,6 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <configuration>
                     <encoding>${project.build.sourceEncoding}</encoding>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <encoding>${maven.compiler.encoding}</encoding>
-                    <outputDirectory>${project.build.directory}/deploy/</outputDirectory>
-                    <appendAssemblyId>false</appendAssemblyId>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifestEntries>
-                            <Class-Path>. config/</Class-Path>
-                        </manifestEntries>
-                        <manifest>
-                            <mainClass>${mainClass}</mainClass>
-                        </manifest>
-                    </archive>
-                    <finalName>${project.artifactId}</finalName>
                 </configuration>
             </plugin>
         </plugins>
