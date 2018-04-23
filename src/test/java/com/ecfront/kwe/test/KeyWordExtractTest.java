@@ -37,9 +37,10 @@ public class KeyWordExtractTest {
         };
         for (String url : urls) {
             System.out.println(url);
-            Assert.assertEquals(sKey, KeyWordExtract.extract(url));
+            KeyWordExtract.Result result = KeyWordExtract.extract(url);
+            Assert.assertEquals(sKey, result.value);
         }
-        Assert.assertEquals("", KeyWordExtract.extract("https://www.baidu.com"));
+        Assert.assertNull(KeyWordExtract.extract("https://www.baidu.com"));
     }
 
 

@@ -1,9 +1,6 @@
 package com.ecfront.kwe;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import javax.script.*;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
@@ -18,7 +15,7 @@ public class KeyWordExtract {
     private static Map<String, Set<Parser>> RULES = new HashMap<>();
     private static final String LOCAL_RULE_FILE = "kwe-rules.txt";
     private static final ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
-    private static final ScriptEngine jsEngine = SCRIPT_ENGINE_MANAGER.getEngineByName("nashorn");
+    private static Invocable invocable;
 
     static {
         try {
@@ -28,20 +25,26 @@ public class KeyWordExtract {
         }
     }
 
-    public static String extract(String url) {
+    public static Result extract(String url) {
         try {
-            URL targetUrl = new URL(url);
-            Set<Parser> parsers = RULES.getOrDefault(targetUrl.getHost(), new HashSet<>());
-            for (Parser parser : parsers) {
-                Optional<String> matched = parser.parse(targetUrl.getPath(), targetUrl.getQuery());
-                if (matched.isPresent()) {
-                    return matched.get();
-                }
-            }
-            return "";
+            return extract(new URL(url));
         } catch (Exception e) {
-            throw new RuntimeException("[KWE]Extract url error", e);
+            throw new RuntimeException("[KWE]Extract url [" + url + "] error", e);
         }
+    }
+
+    public static Result extract(URL url) {
+        if (!RULES.containsKey(url.getHost())) {
+            return null;
+        }
+        Set<Parser> parsers = RULES.get(url.getHost());
+        for (Parser parser : parsers) {
+            Optional<Result> matched = parser.parse(url.getPath(), url.getQuery());
+            if (matched.isPresent()) {
+                return matched.get();
+            }
+        }
+        return null;
     }
 
     public static long loadOnlineRules(String ruleUrl) throws IOException {
@@ -50,76 +53,94 @@ public class KeyWordExtract {
 
     private static long loadRules(List<String> rules) {
         AtomicLong counter = new AtomicLong();
+        StringBuffer sb = new StringBuffer();
         rules.forEach(rule -> {
             String[] items = rule.split("\\|");
-            if (items.length == 5 || items.length == 2) {
-                String host = items[0];
+            if (items.length == 6 || items.length == 3) {
+                String host = items[1];
                 if (!RULES.containsKey(host)) {
                     RULES.put(host, new HashSet<>());
                 }
-                RULES.get(host).add(new Parser(items));
+                Parser parser = new Parser(items);
+                RULES.get(host).add(parser);
                 counter.getAndIncrement();
+                if (parser.jsStr != null) {
+                    sb.append(parser.jsStr + "\r\n");
+                }
             }
         });
+        try {
+            Compilable jsEngine = (Compilable) SCRIPT_ENGINE_MANAGER.getEngineByName("nashorn");
+            CompiledScript script = jsEngine.compile(sb.toString());
+            script.eval();
+            invocable = (Invocable) script.getEngine();
+        } catch (ScriptException e) {
+            throw new RuntimeException("[KWE]Init JS Function error", e);
+        }
         return counter.get();
     }
 
     private static class Parser {
 
+        private String name;
         private boolean wdInQuery;
         private int pathIndex;
         private String queryKey;
         private String codec;
         private String enc;
         private String jsFun;
+        private String jsStr;
+
+        public String getJsStr() {
+            return jsStr;
+        }
 
         private Parser(String[] items) {
-            if (items.length == 5) {
-                wdInQuery = items[1].equalsIgnoreCase("query");
+            name = items[0];
+            if (items.length == 6) {
+                wdInQuery = items[2].equalsIgnoreCase("query");
                 if (wdInQuery) {
-                    queryKey = items[2];
+                    queryKey = items[3];
                 } else {
-                    pathIndex = Integer.valueOf(items[2]);
+                    pathIndex = Integer.valueOf(items[3]);
                 }
-                codec = items[3];
-                enc = items[4];
+                codec = items[4];
+                enc = items[5];
             } else {
-                try {
-                    jsFun = items[0].replaceAll("\\.", "_") + "_" + Math.abs(items[1].hashCode());
-                    String js = "function " + jsFun + "(uri){\r\n" +
-                            "var result = '';\r\n" +
-                            items[1] + ";\r\n" +
-                            "return result;\r\n" +
-                            "}\r\n";
-                    jsEngine.eval(js);
-                } catch (ScriptException e) {
-                    throw new RuntimeException("[KWE]Init JS Function [" + jsFun + "] error", e);
-                }
+                jsFun = items[1].replaceAll("\\.", "_") + "_" + Math.abs(items[2].hashCode());
+                jsStr = "function " + jsFun + "(uri){\r\n" +
+                        "var result = '';\r\n" +
+                        items[2] + ";\r\n" +
+                        "return result;\r\n" +
+                        "}\r\n";
             }
         }
 
-        private Optional<String> parse(String path, String query) {
+        private Optional<Result> parse(String path, String query) {
             if (jsFun == null) {
                 if (wdInQuery) {
-                    if(query==null||query.equals("")){
+                    if (query == null || query.equals("")) {
                         return Optional.empty();
                     }
                     String[] queryItems = query.split("&");
                     for (String queryItem : queryItems) {
                         if (queryItem.startsWith(queryKey + '=')) {
-                            return Optional.of(parse(queryItem.substring(queryKey.length() + 1)));
+                            String keyVal = parse(queryItem.substring(queryKey.length() + 1));
+                            return Optional.of(new Result(name, keyVal));
                         }
                     }
                 } else {
                     String[] pathItems = path.split("/");
                     if (pathItems.length > pathIndex) {
-                        return Optional.of(parse(pathItems[pathIndex + 1]));
+                        String keyVal = parse(pathItems[pathIndex + 1]);
+                        return Optional.of(new Result(name, keyVal));
                     }
                 }
                 return Optional.empty();
             } else {
                 try {
-                    return Optional.of((String) ((Invocable) jsEngine).invokeFunction(jsFun, path + query));
+                    String keyVal = (String) invocable.invokeFunction(jsFun, path + query);
+                    return Optional.of(new Result(name, keyVal));
                 } catch (ScriptException | NoSuchMethodException e) {
                     throw new RuntimeException("[KWE]Execute JS Function [" + jsFun + "] error", e);
                 }
@@ -139,6 +160,17 @@ public class KeyWordExtract {
             }
         }
 
+    }
+
+    public static class Result {
+
+        public String name;
+        public String value;
+
+        public Result(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
     }
 
     private static class Helper {

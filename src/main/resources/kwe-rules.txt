@@ -1,22 +1,22 @@
 # 通用搜索
-www.baidu.com|query|wd|decodeURI|UTF-8
-www.google.com|query|q|decodeURI|UTF-8
-www.google.com.hk|query|q|decodeURI|UTF-8
-www.sogou.com|query|query|decodeURI|UTF-8
-www.so.com|query|q|decodeURI|UTF-8
-www.bing.com|query|q|decodeURI|UTF-8
-cn.bing.com|query|q|decodeURI|UTF-8
-www.youdao.com|path|2|decodeURI|UTF-8
+百度|www.baidu.com|query|wd|decodeURI|UTF-8
+google|www.google.com|query|q|decodeURI|UTF-8
+google|www.google.com.hk|query|q|decodeURI|UTF-8
+搜狗|www.sogou.com|query|query|decodeURI|UTF-8
+360|www.so.com|query|q|decodeURI|UTF-8
+必应|www.bing.com|query|q|decodeURI|UTF-8
+必应|cn.bing.com|query|q|decodeURI|UTF-8
+有道|www.youdao.com|path|2|decodeURI|UTF-8
 # 图片搜索
-image.baidu.com|query|word|decodeURI|UTF-8
+百度图片|image.baidu.com|query|word|decodeURI|UTF-8
 # 购物搜索
-s.taobao.com|query|q|decodeURI|UTF-8
-list.tmall.com|query|q|decodeURI|UTF-8
-search.jd.com|query|keyword|decodeURI|UTF-8
-www.amazon.cn|query|field-keywords|decodeURI|UTF-8
-search.dangdang.com|query|key|decodeURI|GB2312
-search.suning.com|path|0|decodeURI|UTF-8
-search.gome.com.cn|query|question|decodeURI|UTF-8
+淘宝|s.taobao.com|query|q|decodeURI|UTF-8
+天猫|list.tmall.com|query|q|decodeURI|UTF-8
+京东|search.jd.com|query|keyword|decodeURI|UTF-8
+亚马逊|www.amazon.cn|query|field-keywords|decodeURI|UTF-8
+当当|search.dangdang.com|query|key|decodeURI|GB2312
+苏宁|search.suning.com|path|0|decodeURI|UTF-8
+国美|search.gome.com.cn|query|question|decodeURI|UTF-8
 # 其它
-weixin.sogou.com|query|query|decodeURI|UTF-8
-s.weibo.com|var uri = decodeURI(decodeURI(uri)); var kv = uri.split("/")[2]; result = kv.split("&Refer=")[0];
+搜狗微信|weixin.sogou.com|query|query|decodeURI|UTF-8
+微博|s.weibo.com|var uri = decodeURI(decodeURI(uri)); var kv = uri.split("/")[2]; result = kv.split("&Refer=")[0];
