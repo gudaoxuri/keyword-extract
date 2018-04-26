@@ -5,8 +5,7 @@ image:https://api.codacy.com/project/badge/Grade/f2fc8d2aa9594a0bae6e2a445caa56d
 image:https://img.shields.io/badge/license-ASF2-blue.svg["Apache License 2",link="https://www.apache.org/licenses/LICENSE-2.0.txt"]
 image:https://maven-badges.herokuapp.com/maven-central/com.ecfront/keyword-extract/badge.svg["Maven Central",link="https://maven-badges.herokuapp.com/maven-central/com.ecfront/keyword-extract/"]
 
-
-单文件、无三方依赖、支持在线规则升级的URL关键词提取工具。
+单文件、无三方依赖、支持在线规则升级、非标准协议的URL关键词提取工具。
 
 === 使用
 
@@ -15,7 +14,7 @@ image:https://maven-badges.herokuapp.com/maven-central/com.ecfront/keyword-extra
 <dependency>
   <groupId>com.ecfront</groupId>
   <artifactId>keyword-extract</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
 </dependency>
 ----
 
@@ -28,7 +27,6 @@ KeyWordExtract.Result result = KeyWordExtract.extract(url);
 KeyWordExtract.loadOnlineRules("https://raw.githubusercontent.com/gudaoxuri/keyword-extract/master/src/main/resources/kwe-rules.txt");
 ----
 
-
 === 规则配置说明
 
 本地规则文件默认已打到jar中，如要修改可在classpath根目录中创建``kwe-rules.txt``文件，此文件会覆盖默认规则。
@@ -40,7 +38,7 @@ KeyWordExtract.loadOnlineRules("https://raw.githubusercontent.com/gudaoxuri/keyw
 # 规则分一般规则和自定义规则，后者使用js代码处理
 
 # 一般规则
-<名称>|<host>|<关键字所在位置，query:查询条件中，path:url路径中>|<对于query位置指定关键字的key，对于path位置指定以/分隔的偏移量>|<解码方式，目前只支持decodeURI>|<编码>
+<名称>|<host>|<关键字所在位置，query:查询条件中，path:url路径中>|<对于query位置指定关键字的key，对于path位置指定以/分隔的偏移量>|<解码方式，目前只支持decodeURI,空>|<编码>
 
 e.g. :
 
@@ -54,4 +52,10 @@ e.g. :
 e.g. :
 
 微博|s.weibo.com|var uri = decodeURI(decodeURI(uri)); var kv = uri.split("/")[2]; result = kv.split("&Refer=")[0];
+
+# 自定义协议支持
+
+app://app1/somepath?q=URL关键词提取
+custom://custom1/somepath?q=URL关键词提取
+
 ----

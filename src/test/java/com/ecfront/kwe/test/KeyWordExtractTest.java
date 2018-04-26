@@ -33,7 +33,9 @@ public class KeyWordExtractTest {
                 "http://search.gome.com.cn/search?question=URL%E5%85%B3%E9%94%AE%E8%AF%8D%E6%8F%90%E5%8F%96&searchType=goods",
                 // 其它
                 "http://weixin.sogou.com/weixin?type=2&query=URL%E5%85%B3%E9%94%AE%E8%AF%8D%E6%8F%90%E5%8F%96&ie=utf8&s_from=input&_sug_=n&_sug_type_=",
-                "http://s.weibo.com/weibo/URL%25E5%2585%25B3%25E9%2594%25AE%25E8%25AF%258D%25E6%258F%2590%25E5%258F%2596&Refer=index"
+                "http://s.weibo.com/weibo/URL%25E5%2585%25B3%25E9%2594%25AE%25E8%25AF%258D%25E6%258F%2590%25E5%258F%2596&Refer=index",
+                "app://app1/somepath?q=URL关键词提取",
+                "custom://custom1/somepath?q=URL关键词提取"
         };
         for (String url : urls) {
             System.out.println(url);
@@ -41,12 +43,18 @@ public class KeyWordExtractTest {
             Assert.assertEquals(sKey, result.value);
         }
         Assert.assertNull(KeyWordExtract.extract("https://www.baidu.com"));
+        try{
+            KeyWordExtract.extract("c/sssfff");
+            Assert.assertTrue(1!=1);
+        }catch (Exception e){
+            Assert.assertTrue(1==1);
+        }
     }
 
 
     @Test
     public void testOnlineRule() throws IOException {
-        KeyWordExtract.loadOnlineRules("https://raw.githubusercontent.com/gudaoxuri/keyword-extract/master/src/main/resources/kwe-rules.txt");
+        KeyWordExtract.loadOnlineRules("https://raw.githubusercontent.com/gudaoxuri/keyword-extract/master/src/test/resources/kwe-rules.txt");
         testAll();
     }
 }

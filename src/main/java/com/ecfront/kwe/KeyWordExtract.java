@@ -2,9 +2,7 @@ package com.ecfront.kwe;
 
 import javax.script.*;
 import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLDecoder;
+import java.net.*;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -17,17 +15,33 @@ public class KeyWordExtract {
     private static final ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
     private static Invocable invocable;
 
+    private static final Set<String> CUSTOM_PROTOCOLS = new HashSet<>();
+
     static {
         try {
             loadRules(Helper.readAllByClassPath(LOCAL_RULE_FILE));
         } catch (IOException e) {
             throw new RuntimeException("[KWE]Load local rules error", e);
         }
+        Helper.CustomUrlStreamHandler customUrlStreamHandler = new Helper.CustomUrlStreamHandler();
+        URL.setURLStreamHandlerFactory(protocol -> {
+            if (CUSTOM_PROTOCOLS.contains(protocol)) {
+                return customUrlStreamHandler;
+            }
+            return null;
+        });
     }
 
     public static Result extract(String url) {
         try {
             return extract(new URL(url));
+        } catch (MalformedURLException e) {
+            if (e.getMessage().startsWith("unknown protocol:")) {
+                registerProtocol(url.substring(0, url.indexOf(":/")));
+                return extract(url);
+            } else {
+                throw new RuntimeException("[KWE]Extract url [" + url + "] error", e);
+            }
         } catch (Exception e) {
             throw new RuntimeException("[KWE]Extract url [" + url + "] error", e);
         }
@@ -37,7 +51,7 @@ public class KeyWordExtract {
         if (!RULES.containsKey(url.getHost())) {
             return null;
         }
-        Set<Parser> parsers = RULES.get(url.getHost());
+        Set<Parser> parsers = RULES.get(url.getHost().toLowerCase());
         for (Parser parser : parsers) {
             Optional<Result> matched = parser.parse(url.getPath(), url.getQuery());
             if (matched.isPresent()) {
@@ -51,13 +65,17 @@ public class KeyWordExtract {
         return loadRules(Helper.httpGet(ruleUrl));
     }
 
+    public static void registerProtocol(String... protocol) {
+        CUSTOM_PROTOCOLS.addAll(Arrays.asList(protocol));
+    }
+
     private static long loadRules(List<String> rules) {
         AtomicLong counter = new AtomicLong();
         StringBuffer sb = new StringBuffer();
         rules.forEach(rule -> {
-            String[] items = rule.split("\\|");
+            String[] items = rule.split("\\|", -1);
             if (items.length == 6 || items.length == 3) {
-                String host = items[1];
+                String host = items[1].toLowerCase();
                 if (!RULES.containsKey(host)) {
                     RULES.put(host, new HashSet<>());
                 }
@@ -100,7 +118,7 @@ public class KeyWordExtract {
             if (items.length == 6) {
                 wdInQuery = items[2].equalsIgnoreCase("query");
                 if (wdInQuery) {
-                    queryKey = items[3];
+                    queryKey = items[3].toLowerCase();
                 } else {
                     pathIndex = Integer.valueOf(items[3]);
                 }
@@ -124,7 +142,7 @@ public class KeyWordExtract {
                     }
                     String[] queryItems = query.split("&");
                     for (String queryItem : queryItems) {
-                        if (queryItem.startsWith(queryKey + '=')) {
+                        if (queryItem.toLowerCase().startsWith(queryKey + '=')) {
                             String keyVal = parse(queryItem.substring(queryKey.length() + 1));
                             return Optional.of(new Result(name, keyVal));
                         }
@@ -152,6 +170,8 @@ public class KeyWordExtract {
                 switch (codec.toLowerCase()) {
                     case "decodeuri":
                         return URLDecoder.decode(encodeValue, enc);
+                    case "":
+                        return encodeValue;
                     default:
                         throw new RuntimeException("Decoder[" + codec + "] NOT Exist.");
                 }
@@ -195,6 +215,13 @@ public class KeyWordExtract {
             connection.connect();
             BufferedReader buffer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             return buffer.lines().collect(Collectors.toList());
+        }
+
+        private static class CustomUrlStreamHandler extends URLStreamHandler {
+            @Override
+            protected URLConnection openConnection(URL u) {
+                return null;
+            }
         }
 
     }
