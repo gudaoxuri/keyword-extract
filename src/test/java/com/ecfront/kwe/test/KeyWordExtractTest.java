@@ -9,7 +9,7 @@ import java.io.IOException;
 public class KeyWordExtractTest {
 
     @Test
-    public void testAll() {
+    public void testAll() throws InterruptedException {
         String sKey = "URL关键词提取";
         String[] urls = new String[]{
                 // 通用
@@ -43,17 +43,13 @@ public class KeyWordExtractTest {
             Assert.assertEquals(sKey, result.value);
         }
         Assert.assertNull(KeyWordExtract.extract("https://www.baidu.com"));
-        try{
-            KeyWordExtract.extract("c/sssfff");
-            Assert.assertTrue(1!=1);
-        }catch (Exception e){
-            Assert.assertTrue(1==1);
-        }
+        // 错误的URL
+        Assert.assertNull(KeyWordExtract.extract("c/sssfff"));
     }
 
 
     @Test
-    public void testOnlineRule() throws IOException {
+    public void testOnlineRule() throws IOException, InterruptedException {
         KeyWordExtract.loadOnlineRules("https://raw.githubusercontent.com/gudaoxuri/keyword-extract/master/src/test/resources/kwe-rules.txt");
         testAll();
     }

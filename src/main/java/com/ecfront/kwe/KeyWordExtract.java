@@ -2,7 +2,10 @@ package com.ecfront.kwe;
 
 import javax.script.*;
 import java.io.*;
-import java.net.*;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,45 +18,29 @@ public class KeyWordExtract {
     private static final ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
     private static Invocable invocable;
 
-    private static final Set<String> CUSTOM_PROTOCOLS = new HashSet<>();
-
     static {
         try {
             loadRules(Helper.readAllByClassPath(LOCAL_RULE_FILE));
         } catch (IOException e) {
             throw new RuntimeException("[KWE]Load local rules error", e);
         }
-        Helper.CustomUrlStreamHandler customUrlStreamHandler = new Helper.CustomUrlStreamHandler();
-        URL.setURLStreamHandlerFactory(protocol -> {
-            if (CUSTOM_PROTOCOLS.contains(protocol)) {
-                return customUrlStreamHandler;
-            }
-            return null;
-        });
     }
 
-    public static Result extract(String url) {
+    public static Result extract(String uri) {
         try {
-            return extract(new URL(url));
-        } catch (MalformedURLException e) {
-            if (e.getMessage().startsWith("unknown protocol:")) {
-                registerProtocol(url.substring(0, url.indexOf(":/")));
-                return extract(url);
-            } else {
-                throw new RuntimeException("[KWE]Extract url [" + url + "] error", e);
-            }
+            return extract(new URI(uri));
         } catch (Exception e) {
-            throw new RuntimeException("[KWE]Extract url [" + url + "] error", e);
+            throw new RuntimeException("[KWE]Extract uri [" + uri + "] error", e);
         }
     }
 
-    public static Result extract(URL url) {
-        if (!RULES.containsKey(url.getHost())) {
+    public static Result extract(URI uri) {
+        if (!RULES.containsKey(uri.getHost())) {
             return null;
         }
-        Set<Parser> parsers = RULES.get(url.getHost().toLowerCase());
+        Set<Parser> parsers = RULES.get(uri.getHost().toLowerCase());
         for (Parser parser : parsers) {
-            Optional<Result> matched = parser.parse(url.getPath(), url.getQuery());
+            Optional<Result> matched = parser.parse(uri.getRawPath(), uri.getRawQuery());
             if (matched.isPresent()) {
                 return matched.get();
             }
@@ -63,10 +50,6 @@ public class KeyWordExtract {
 
     public static long loadOnlineRules(String ruleUrl) throws IOException {
         return loadRules(Helper.httpGet(ruleUrl));
-    }
-
-    public static void registerProtocol(String... protocol) {
-        CUSTOM_PROTOCOLS.addAll(Arrays.asList(protocol));
     }
 
     private static long loadRules(List<String> rules) {
@@ -108,10 +91,6 @@ public class KeyWordExtract {
         private String enc;
         private String jsFun;
         private String jsStr;
-
-        public String getJsStr() {
-            return jsStr;
-        }
 
         private Parser(String[] items) {
             name = items[0];
@@ -215,13 +194,6 @@ public class KeyWordExtract {
             connection.connect();
             BufferedReader buffer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             return buffer.lines().collect(Collectors.toList());
-        }
-
-        private static class CustomUrlStreamHandler extends URLStreamHandler {
-            @Override
-            protected URLConnection openConnection(URL u) {
-                return null;
-            }
         }
 
     }
