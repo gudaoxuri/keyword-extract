@@ -5,6 +5,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
 
 public class KeyWordExtractTest {
 
@@ -31,6 +33,7 @@ public class KeyWordExtractTest {
                 "http://search.dangdang.com/?key=URL%B9%D8%BC%FC%B4%CA%CC%E1%C8%A1&act=input&noresult=1",
                 "https://search.suning.com/URL关键词提取/",
                 "http://search.gome.com.cn/search?question=URL%E5%85%B3%E9%94%AE%E8%AF%8D%E6%8F%90%E5%8F%96&searchType=goods",
+                "https://www.tairanmall.com/list.html?n=URL%E5%85%B3%E9%94%AE%E8%AF%8D%E6%8F%90%E5%8F%96",
                 // 其它
                 "http://weixin.sogou.com/weixin?type=2&query=URL%E5%85%B3%E9%94%AE%E8%AF%8D%E6%8F%90%E5%8F%96&ie=utf8&s_from=input&_sug_=n&_sug_type_=",
                 "http://s.weibo.com/weibo/URL%25E5%2585%25B3%25E9%2594%25AE%25E8%25AF%258D%25E6%258F%2590%25E5%258F%2596&Refer=index",
@@ -45,6 +48,8 @@ public class KeyWordExtractTest {
         Assert.assertNull(KeyWordExtract.extract("https://www.baidu.com"));
         // 错误的URL
         Assert.assertNull(KeyWordExtract.extract("c/sssfff"));
+        Assert.assertEquals("维生素/矿物�%",KeyWordExtract.extract("https://www.tairanmall.com/list.html?n=%E7%BB%B4%E7%94%9F%E7%B4%A0%2F%E7%9F%BF%E7%89%A9%E8%B4%").value);
+        Assert.assertEquals("维生素/矿物�%",KeyWordExtract.extract("custom://custom2/somepath?q=%E7%BB%B4%E7%94%9F%E7%B4%A0%2F%E7%9F%BF%E7%89%A9%E8%B4%").value);
     }
 
 
@@ -53,4 +58,5 @@ public class KeyWordExtractTest {
         KeyWordExtract.loadOnlineRules("https://raw.githubusercontent.com/gudaoxuri/keyword-extract/master/src/test/resources/kwe-rules.txt");
         testAll();
     }
+
 }

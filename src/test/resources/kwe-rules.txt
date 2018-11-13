@@ -17,8 +17,10 @@ google|www.google.com.hk|query|q|decodeURI|UTF-8
 当当|search.dangdang.com|query|key|decodeURI|GB2312
 苏宁|search.suning.com|path|0|decodeURI|UTF-8
 国美|search.gome.com.cn|query|question|decodeURI|UTF-8
+泰然城|www.tairanmall.com|query|n|decodeURI|UTF-8
 # 其它
 搜狗微信|weixin.sogou.com|query|query|decodeURI|UTF-8
 微博|s.weibo.com|var uri = decodeURI(decodeURI(uri)); var kv = uri.split("/")[2]; result = kv.split("&Refer=")[0];
-自定义1|app1|query|q||
-自定义2|custom1|query|q||
+自定义APP|app1|query|q||
+自定义1|custom1|query|q||
+自定义2|custom2|query|q|decodeURI|UTF-8

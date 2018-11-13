@@ -2,10 +2,7 @@ package com.ecfront.kwe;
 
 import javax.script.*;
 import java.io.*;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLDecoder;
+import java.net.*;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -28,7 +25,17 @@ public class KeyWordExtract {
 
     public static Result extract(String uri) {
         try {
-            return extract(new URI(uri));
+            URI u = null;
+            try {
+                u = new URI(uri);
+            } catch (URISyntaxException e) {
+                if (e.getReason().contains("Malformed escape pair")) {
+                    uri = uri.replaceAll("%(?![0-9a-fA-F]{2})", "%25");
+                    u = new URI(uri);
+                }
+            }
+            assert u != null;
+            return extract(u);
         } catch (Exception e) {
             throw new RuntimeException("[KWE]Extract uri [" + uri + "] error", e);
         }

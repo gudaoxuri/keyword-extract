@@ -14,7 +14,7 @@ image:https://maven-badges.herokuapp.com/maven-central/com.ecfront/keyword-extra
 <dependency>
   <groupId>com.ecfront</groupId>
   <artifactId>keyword-extract</artifactId>
-  <version>1.5</version>
+  <version>1.6</version>
 </dependency>
 ----
 
